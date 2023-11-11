@@ -21,6 +21,7 @@ class TodoApp(ft.UserControl):
             ]
         )
         self.footer = ft.Text(f'Tasks remaining: 0')
+        self.all_done = ft.Checkbox(label='Mark all as done', on_change=self.mark_all_done)
         return ft.Column(
             controls=[
                 ft.Row(
@@ -32,6 +33,7 @@ class TodoApp(ft.UserControl):
                 ft.Row(
                     controls=[
                         self.filter,
+                        self.all_done,
                     ]
                 ),
                 self.tasks_list,
@@ -58,6 +60,12 @@ class TodoApp(ft.UserControl):
         for task in self.tasks_list.controls[:]:
             if task.completed:
                 self.tasks_list.controls.remove(task)
+        self.update()
+        
+    def mark_all_done(self, e):
+        for task in self.tasks_list.controls[:]:
+            task.completed = self.all_done.value
+            task.value = self.all_done.value
         self.update()
         
     def filtering(self):
