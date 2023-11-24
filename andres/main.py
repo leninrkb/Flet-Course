@@ -7,14 +7,19 @@ def main(page: flet.Page):
         controls=[
             flet.Row(
                 controls=[
-                    flet.Text(value="Doing andres' homework"),
-                    flet.Slider(),
+                    flet.Text(value="Doing andres homework"),
+                    flet.Slider(
+                        
+                    ),
                 ],
             ),
             flet.Column(
                 controls=[
                     flet.Image(
-                        src="https://picsum.photos/200/200?random=1"
+                        src=f"/images/arabian_cat.png",
+                        width=100,
+                        height=100,
+                        fit=flet.ImageFit.CONTAIN,
                     )
                 ]
             ),
@@ -26,5 +31,9 @@ def main(page: flet.Page):
         ]
     )
     page.add(col)
+    page.update()
 
-flet.app(target=main, view=flet.AppView.WEB_BROWSER)
+flet.app(
+    target=main,
+    assets_dir="assets"
+)
