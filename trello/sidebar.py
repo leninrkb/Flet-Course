@@ -25,4 +25,36 @@ class Sidebar(flet.UserControl):
         )
         
         def build(self):
-            pass
+            self.view = flet.Container(
+            content= flet.Column([
+                flet.Row([
+                    flet.Text("Workspace"),
+                ]),
+                # divider
+                flet.Container(
+                    bgcolor= flet.colors.BLACK26,
+                    border_radius= flet.border_radius.all(30),
+                    height=1,
+                    alignment= flet.alignment.center_right,
+                    width=220
+                ),
+                self.top_nav_rail,
+                # divider
+                flet.Container(
+                    bgcolor= flet.colors.BLACK26,
+                    border_radius= flet.border_radius.all(30),
+                    height=1,
+                    alignment= flet.alignment.center_right,
+                    width=220
+                ),
+                ], tight=True),
+                padding= flet.padding.all(15),
+                margin= flet.margin.all(0),
+                width=250,
+                bgcolor= flet.colors.BLUE_GREY,
+                )
+            return self.view
+        
+        def top_nav_change(self, e):
+            self.top_nav_rail.selected_index = e.control.selected_index
+            self.update()
