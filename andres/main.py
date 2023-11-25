@@ -11,17 +11,31 @@ def main(page: flet.Page):
         wrap= False,
         scroll= "always",
     )
-    def add_img_images(src):
-        image = flet.Image(
-                    src= src,
+    def add_img_images(src, name=""):
+        _col = flet.Column(
+            controls= [
+                flet.Container(
+                    content = flet.Image(
+                        src= src,
+                        width= 100,
+                        height= 100,
+                        border_radius= flet.border_radius.all(10),
+                        fit= flet.ImageFit.COVER
+                    ),
+                ),
+                flet.Container(
                     width= 100,
-                    height= 100,
-                    border_radius= flet.border_radius.all(10)
+                    content= flet.Text(
+                        value= name,
+                        text_align= flet.TextAlign.CENTER
+                    )
                 )
-        images.controls.append(image)
+            ],
+        )
+        images.controls.append(_col)
     for name in uploaded_files:
-        add_img_images(f"/uploads/{name}")
-    file = flet.Text()
+        add_img_images(f"/uploads/{name}", name)
+    file = flet.Text("")
     def filepicked(e:flet.FilePickerResultEvent):
         if e.files:
             r = list(map(lambda f: f.name, e.files))
@@ -49,10 +63,16 @@ def main(page: flet.Page):
             )
             file_picker.upload(to_upload)
     def upload(e):
+        if file.value != "":
             upload_file()
             time.sleep(1)
-            add_img_images(f"/uploads/{file.value}")
+            add_img_images(f"/uploads/{file.value}", file.value)
+            file.value = ""
+            file.update()
             notify(f"{file.value} uploaded!")
+        else:
+            notify("Please select an image!")
+            
     col = flet.Column(
         controls=[
             flet.Row(
