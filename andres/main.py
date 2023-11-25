@@ -11,6 +11,9 @@ def main(page: flet.Page):
         wrap= False,
         scroll= "always",
     )
+    def set_current_file(name):
+        current_file.value = name
+        current_file.update()
     def add_img_images(src, name=""):
         _col = flet.Column(
             controls= [
@@ -20,8 +23,9 @@ def main(page: flet.Page):
                         width= 100,
                         height= 100,
                         border_radius= flet.border_radius.all(10),
-                        fit= flet.ImageFit.COVER
+                        fit= flet.ImageFit.COVER,
                     ),
+                    on_click= lambda _: set_current_file(name),
                 ),
                 flet.Container(
                     width= 100,
