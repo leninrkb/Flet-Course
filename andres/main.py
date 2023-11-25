@@ -11,9 +11,20 @@ def main(page: flet.Page):
         wrap= False,
         scroll= "always",
     )
+    current_img = flet.Image(
+        src=f"/images/arabian_cat.png",
+        width=100,
+        height=100,
+        fit=flet.ImageFit.COVER,
+        border_radius= flet.border_radius.all(10)
+    )
     def set_current_file(name):
         current_file.value = name
         current_file.update()
+    def set_current_img(e):
+        current_img.src = f"/uploads/{current_file.value}"
+        current_img.update()
+        page.update()
     def add_img_images(src, name=""):
         _col = flet.Column(
             controls= [
@@ -96,12 +107,12 @@ def main(page: flet.Page):
                         controls=[
                             flet.OutlinedButton(
                                 icon= flet.icons.FOLDER,
-                                text= "Select image",
+                                text= "Select to upload",
                                 on_click= lambda _: file_picker.pick_files()
                             ),
                             flet.OutlinedButton(
                                 icon= flet.icons.UPLOAD_FILE,
-                                text= "Upload image",
+                                text= "Upload",
                                 on_click= upload
                             ),
                         ]
@@ -109,7 +120,7 @@ def main(page: flet.Page):
                     flet.Container(
                         content= flet.Column(
                             controls=[
-                                flet.Text("Selected image:"),
+                                flet.Text("To upload:"),
                                 file,
                             ],
                         ),
@@ -120,27 +131,43 @@ def main(page: flet.Page):
                     ),
                     flet.Container(
                         content= flet.Column(
+                            horizontal_alignment= flet.CrossAxisAlignment.CENTER,
                             controls=[
-                                flet.Text("Current image:"),
-                                current_file,
+                                flet.Container(
+                                    content= flet.Text(
+                                        value = "Current image:",
+                                    ),   
+                                ),
+                                flet.Row(
+                                    controls=[
+                                        current_file,
+                                        flet.TextButton(
+                                            text= "Load charts",
+                                            icon= flet.icons.INSERT_CHART,
+                                            on_click= set_current_img
+                                        )
+                                    ]
+                                ),
+                                
                             ],
                         ),
                         padding= 5,
                         ink= True,
                         border_radius= 10,
-                        border= flet.border.all(1, flet.colors.GREEN_500)
+                        border= flet.border.all(1, flet.colors.GREEN_500),
                     ),
                 ],
             ),
             images,
             flet.Column(
                 controls=[
-                    flet.Image(
-                        src=f"/images/AOT.png",
-                        width=100,
-                        height=100,
-                        fit=flet.ImageFit.CONTAIN,
-                    )
+                    flet.Container(
+                        content= current_img,
+                        padding= 5,
+                        ink= True,
+                        border_radius= 10,
+                        border= flet.border.all(1, flet.colors.DEEP_PURPLE_500)
+                    ),
                 ]
             ),
             flet.Row(
