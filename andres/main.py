@@ -35,7 +35,18 @@ def main(page: flet.Page):
         images.controls.append(_col)
     for name in uploaded_files:
         add_img_images(f"/uploads/{name}", name)
-    file = flet.Text("")
+    file = flet.Text(
+        value= "",
+        size= 14,
+        color= flet.colors.BLUE_300,
+        italic= True
+    )
+    current_file = flet.Text(
+        value= "",
+        size= 14,
+        color= flet.colors.BLUE_300,
+        weight= flet.FontWeight.BOLD
+    )
     def filepicked(e:flet.FilePickerResultEvent):
         if e.files:
             r = list(map(lambda f: f.name, e.files))
@@ -79,7 +90,6 @@ def main(page: flet.Page):
                 controls=[
                     flet.Column(
                         controls=[
-                            file,
                             flet.OutlinedButton(
                                 icon= flet.icons.FOLDER,
                                 text= "Select image",
@@ -92,17 +102,35 @@ def main(page: flet.Page):
                             ),
                         ]
                     ),
-                    flet.Column(
-                        controls=[
-                            flet.Text(value="Hayase <3")
-                        ]
-                    )
+                    flet.Container(
+                        content= flet.Column(
+                            controls=[
+                                flet.Text("Selected image:"),
+                                file,
+                            ],
+                        ),
+                        padding= 5,
+                        ink= True,
+                        border_radius= 10,
+                        border= flet.border.all(1, flet.colors.DEEP_PURPLE_500)
+                    ),
+                    flet.Container(
+                        content= flet.Column(
+                            controls=[
+                                flet.Text("Current image:"),
+                                current_file,
+                            ],
+                        ),
+                        padding= 5,
+                        ink= True,
+                        border_radius= 10,
+                        border= flet.border.all(1, flet.colors.GREEN_500)
+                    ),
                 ],
             ),
             images,
             flet.Column(
                 controls=[
-                    file,
                     flet.Image(
                         src=f"/images/AOT.png",
                         width=100,
@@ -123,6 +151,7 @@ def main(page: flet.Page):
 
 flet.app(
     target=main,
+    view= flet.WEB_BROWSER,
     assets_dir="assets",
     upload_dir="assets/uploads"
 )
