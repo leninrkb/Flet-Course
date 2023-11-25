@@ -9,21 +9,36 @@ def main(page: flet.Page):
             r = list(map(lambda f: f.name, e.files))
             file.value = r[0]
             file.update()
-    file_picker_dialog = flet.FilePicker(on_result=filepicked)
-    page.overlay.append(file_picker_dialog)
+    file_picker = flet.FilePicker(on_result=filepicked)
+    page.overlay.append(file_picker)
+    def upload(e):
+        to_upload = []
+        if file_picker.result != None and file_picker.result.files != None:
+            _file = file_picker.result.files[0]
+            to_upload.append(
+                flet.FilePickerUploadFile(
+                    _file.name,
+                    page.get_upload_url(_file.name, 600)
+                )
+            )
+            file_picker.upload(to_upload)
+            print(f"uploaded {_file.name}")
     col = flet.Column(
         controls=[
             flet.Row(
-                spacing= 5,
                 controls=[
                     flet.Column(
-                        spacing= 5,
                         controls=[
                             file,
                             flet.OutlinedButton(
-                                icon= flet.icons.FILE_UPLOAD,
-                                text= "Upload image",
-                                on_click= lambda _: file_picker_dialog.pick_files()
+                                icon= flet.icons.FOLDER,
+                                text= "Select image",
+                                on_click= lambda _: file_picker.pick_files()
+                            ),
+                            flet.OutlinedButton(
+                                icon= flet.icons.FOLDER,
+                                text= "Uplaod image",
+                                on_click= upload
                             ),
                         ]
                     ),
@@ -57,5 +72,6 @@ def main(page: flet.Page):
 
 flet.app(
     target=main,
-    assets_dir="assets"
+    assets_dir="assets",
+    upload_dir="uploads"
 )
