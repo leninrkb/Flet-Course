@@ -1,8 +1,26 @@
 import flet
 import time
+import os 
+
 
 def main(page: flet.Page):
     page.title= "Light spectre controled with python"
+    uploaded_files = os.listdir("./assets/uploads")
+    images = flet.Row(
+        expand= False,
+        wrap= False,
+        scroll= "always",
+    )
+    def add_img_images(src):
+        image = flet.Image(
+                    src= src,
+                    width= 100,
+                    height= 100,
+                    border_radius= flet.border_radius.all(10)
+                )
+        images.controls.append(image)
+    for name in uploaded_files:
+        add_img_images(f"/uploads/{name}")
     file = flet.Text()
     def filepicked(e:flet.FilePickerResultEvent):
         if e.files:
@@ -11,7 +29,15 @@ def main(page: flet.Page):
             file.update()
     file_picker = flet.FilePicker(on_result=filepicked)
     page.overlay.append(file_picker)
-    def upload(e):
+    def notify(message):
+        page.snack_bar = flet.SnackBar(
+            content= flet.Text(
+                value=message
+            )
+        )
+        page.snack_bar.open = True
+        page.update()
+    def upload_file():
         to_upload = []
         if file_picker.result != None and file_picker.result.files != None:
             _file = file_picker.result.files[0]
@@ -22,7 +48,11 @@ def main(page: flet.Page):
                 )
             )
             file_picker.upload(to_upload)
-            print(f"uploaded {_file.name}")
+    def upload(e):
+            upload_file()
+            time.sleep(1)
+            add_img_images(f"/uploads/{file.value}")
+            notify(f"{file.value} uploaded!")
     col = flet.Column(
         controls=[
             flet.Row(
@@ -36,8 +66,8 @@ def main(page: flet.Page):
                                 on_click= lambda _: file_picker.pick_files()
                             ),
                             flet.OutlinedButton(
-                                icon= flet.icons.FOLDER,
-                                text= "Uplaod image",
+                                icon= flet.icons.UPLOAD_FILE,
+                                text= "Upload image",
                                 on_click= upload
                             ),
                         ]
@@ -49,6 +79,7 @@ def main(page: flet.Page):
                     )
                 ],
             ),
+            images,
             flet.Column(
                 controls=[
                     file,
@@ -73,5 +104,5 @@ def main(page: flet.Page):
 flet.app(
     target=main,
     assets_dir="assets",
-    upload_dir="uploads"
+    upload_dir="assets/uploads"
 )
