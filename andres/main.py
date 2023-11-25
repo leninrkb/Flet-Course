@@ -13,10 +13,10 @@ def main(page: flet.Page):
     )
     current_img = flet.Image(
         src=f"/images/arabian_cat.png",
-        width=100,
-        height=100,
-        fit=flet.ImageFit.COVER,
-        border_radius= flet.border_radius.all(10)
+        width=500,
+        height=500,
+        fit=flet.ImageFit.CONTAIN,
+        border_radius= flet.border_radius.all(10),
     )
     def set_current_file(name):
         current_file.value = name
@@ -39,10 +39,12 @@ def main(page: flet.Page):
                     on_click= lambda _: set_current_file(name),
                 ),
                 flet.Container(
-                    width= 100,
                     content= flet.Text(
                         value= name,
-                        text_align= flet.TextAlign.CENTER
+                        text_align= flet.TextAlign.CENTER,
+                        width= 100,
+                        max_lines= 1,
+                        overflow= flet.TextOverflow.ELLIPSIS
                     )
                 )
             ],
@@ -100,6 +102,8 @@ def main(page: flet.Page):
             notify("Please select an image!")
             
     col = flet.Column(
+        scroll= flet.ScrollMode.ALWAYS,
+        expand= True,
         controls=[
             flet.Row(
                 controls=[
@@ -159,16 +163,17 @@ def main(page: flet.Page):
                 ],
             ),
             images,
-            flet.Column(
+            flet.Row(
+                alignment= flet.MainAxisAlignment.CENTER,
                 controls=[
                     flet.Container(
                         content= current_img,
                         padding= 5,
                         ink= True,
                         border_radius= 10,
-                        border= flet.border.all(1, flet.colors.DEEP_PURPLE_500)
+                        border= flet.border.all(1, flet.colors.DEEP_PURPLE_500),
                     ),
-                ]
+                ],
             ),
             flet.Row(
                 controls=[
