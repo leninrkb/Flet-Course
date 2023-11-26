@@ -15,12 +15,12 @@ def tobase64(img):
     
 def newslider(value_changed):
     return flet.Slider(
-        min= -2,
-        max= 2,
+        min= -10,
+        max= 10,
         divisions= 0.1,
         on_change= value_changed,
         value= 1,
-        width= 500
+        width= 300
     )
 
 def newchart():
@@ -79,7 +79,7 @@ def make_linechart(chanel, color):
         curved= True,
         stroke_cap_round=True,
     )
-    histogram = cv2.calcHist([chanel], [0], None, [10], [0, 256])
+    histogram = cv2.calcHist([chanel], [0], None, [10], [0, 256]) #aqui calcula el histograma
     max_ = max(histogram, key=lambda x: x[0])
     histogram = histogram / max_
     histogram = histogram * 10
@@ -88,7 +88,7 @@ def make_linechart(chanel, color):
         line_chart_data.data_points.append(data_point)
     return line_chart_data
     
-data = None
+data = None # refiere a la data de la imagen cargada por cv2
 sliderB_value = 1
 sliderG_value = 1
 sliderR_value = 1
@@ -146,13 +146,13 @@ def main(page: flet.Page):
             notify("Select an image!")
     def recalc_hist(e):
         try:
-            print(sliderB_value)
-            print(sliderG_value)
-            print(sliderR_value)
             temp = copy.deepcopy(data)
-            temp[:, :, 0] = cv2.multiply(temp[:, :, 0], sliderB_value)
+            # tambien puedes usar la suma enves de la mult
+            temp[:, :, 0] = cv2.multiply(temp[:, :, 0], sliderB_value) #aumenta la intensidad
             temp[:, :, 1] = cv2.multiply(temp[:, :, 1], sliderG_value)
             temp[:, :, 2] = cv2.multiply(temp[:, :, 2], sliderR_value)
+
+
             temp[:, :, 0] = np.clip(temp[:, :, 0], 0, 255)
             temp[:, :, 1] = np.clip(temp[:, :, 1], 0, 255)
             temp[:, :, 2] = np.clip(temp[:, :, 2], 0, 255)
@@ -307,58 +307,68 @@ def main(page: flet.Page):
             flet.Row(
                 scroll= flet.ScrollMode.AUTO,
                 controls=[
-                    flet.Container(
-                        content= chartB,
-                        width= 400,
-                        height= 450,
-                    ),
-                    flet.Container(
-                        content= chartG,
-                        width= 400,
-                        height= 450,
-                    ),
-                    flet.Container(
-                        content= chartR,
-                        width= 400,
-                        height= 450,
-                    ),
-                ],
-            ),
-            flet.Row(
-                scroll= flet.ScrollMode.AUTO,
-                controls=[
-                    flet.Container(
-                        content= current_img,
-                        padding= 5,
-                        ink= True,
-                        border_radius= 10,
-                        border= flet.border.all(1, flet.colors.DEEP_PURPLE_500),
-                    ),
                     flet.Column(
                         controls=[
-                            flet.TextButton(
-                                text="Apply",
-                                on_click= recalc_hist
-                            ),
+                            flet.Container(
+                                content= chartB,
+                                width= 400,
+                                height= 450,
+                            ), 
                             flet.Row(
                                 controls=[
                                     flet.Text("Blue channel"),
                                     sliderB,
+
                                 ]
                             ),
+                        ]
+                    ),
+                    flet.Column(
+                        controls=[
+                            flet.Container(
+                                content= chartG,
+                                width= 400,
+                                height= 450,
+                            ), 
                             flet.Row(
                                 controls=[
                                     flet.Text("Green channel"),
                                     sliderG,
                                 ]
                             ),
+                        ]
+                    ),
+                    flet.Column(
+                        controls=[
+                            flet.Container(
+                                content= chartR,
+                                width= 400,
+                                height= 450,
+                            ), 
                             flet.Row(
                                 controls=[
                                     flet.Text("Red channel"),
                                     sliderR,
                                 ]
-                            )
+                            ),
                         ]
+                    ),
+                ],
+            ),
+            flet.Column(
+                scroll= flet.ScrollMode.AUTO,
+                controls=[
+                    flet.OutlinedButton(
+                        text="Apply",
+                        on_click= recalc_hist,
+                        width= 300
+                    ),
+                    flet.Container(
+                        content= current_img,
+                        padding= 5,
+                        ink= True,
+                        border_radius= 10,
+                        border= flet.border.all(1, flet.colors.DEEP_PURPLE_500),
                     ),
                 ],
             ),
