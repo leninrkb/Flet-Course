@@ -15,11 +15,12 @@ def tobase64(img):
     
 def newslider(value_changed):
     return flet.Slider(
-        min= -3,
-        max= 3,
+        min= -2,
+        max= 2,
         divisions= 0.1,
         on_change= value_changed,
-        value= 1
+        value= 1,
+        width= 500
     )
 
 def newchart():
@@ -116,26 +117,28 @@ def main(page: flet.Page):
     )
     current_img = flet.Image(
         src=f"/images/arabian_cat.png",
-        width=600,
-        height=500,
-        fit=flet.ImageFit.COVER,
+        width= 40 * 16,
+        height= 40 * 9,
+        fit=flet.ImageFit.CONTAIN,
         border_radius= flet.border_radius.all(10),
     )
     def set_current_file(name):
         current_file.value = name
         current_file.update()
+    def calc_chart(data):
+        B, G, R = cv2.split(data)
+        line_chart_b = make_linechart(B, flet.colors.BLUE)
+        line_chart_g = make_linechart(G, flet.colors.GREEN)
+        line_chart_r = make_linechart(R, flet.colors.RED)
+        chartB.data_series = [line_chart_b]
+        chartG.data_series = [line_chart_g]
+        chartR.data_series = [line_chart_r]
     def load_charts(e):
         global data
         if current_file.value != "":
             src = f"./assets/uploads/{current_file.value}"
             data = cv2.imread(src)
-            B, G, R = cv2.split(data)
-            line_chart_b = make_linechart(B, flet.colors.BLUE)
-            line_chart_g = make_linechart(G, flet.colors.GREEN)
-            line_chart_r = make_linechart(R, flet.colors.RED)
-            chartB.data_series = [line_chart_b]
-            chartG.data_series = [line_chart_g]
-            chartR.data_series = [line_chart_r]
+            calc_chart(data)
             current_img.src_base64 = ""
             current_img.src = f"/uploads/{current_file.value}"
             page.update()
@@ -156,7 +159,8 @@ def main(page: flet.Page):
             encode_base64 = tobase64(temp)
             current_img.src_base64 = encode_base64
             current_img.src = ""
-            current_img.update()
+            calc_chart(temp)
+            page.update()
         except e:
             print(e)
             notify("Select an image!")
@@ -336,9 +340,24 @@ def main(page: flet.Page):
                                 text="Apply",
                                 on_click= recalc_hist
                             ),
-                            sliderB,
-                            sliderG,
-                            sliderR,
+                            flet.Row(
+                                controls=[
+                                    flet.Text("Blue channel"),
+                                    sliderB,
+                                ]
+                            ),
+                            flet.Row(
+                                controls=[
+                                    flet.Text("Green channel"),
+                                    sliderG,
+                                ]
+                            ),
+                            flet.Row(
+                                controls=[
+                                    flet.Text("Red channel"),
+                                    sliderR,
+                                ]
+                            )
                         ]
                     ),
                 ],
@@ -350,7 +369,7 @@ def main(page: flet.Page):
 
 flet.app(
     target=main,
-    view= flet.WEB_BROWSER,
+    # view= flet.WEB_BROWSER,
     assets_dir="assets",
     upload_dir="assets/uploads"
 )
