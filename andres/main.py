@@ -1,11 +1,81 @@
 import flet
 import time
 import os 
+import cv2
+import matplotlib.pyplot as plt
 
+
+def newchart():
+    return flet.LineChart(
+        data_series=[],
+        border= flet.border.all(3, flet.colors.with_opacity(0.2, flet.colors.ON_SURFACE)),
+        horizontal_grid_lines= flet.ChartGridLines(
+            interval= 1, 
+            color= flet.colors.with_opacity(0.2, flet.colors.ON_SURFACE), 
+            width= 1
+        ),
+        vertical_grid_lines= flet.ChartGridLines(
+            interval=1, 
+            color=flet.colors.with_opacity(0.2, flet.colors.ON_SURFACE), 
+            width=1
+        ),
+        left_axis=flet.ChartAxis(
+            labels=[
+                flet.ChartAxisLabel(
+                    value=1,
+                    label=flet.Text("1"),
+                ),
+                flet.ChartAxisLabel(
+                    value=10,
+                    label=flet.Text("255"),
+                ),
+            ],
+            labels_size=50,
+        ),
+        bottom_axis=flet.ChartAxis(
+            labels=[
+                flet.ChartAxisLabel(
+                    value=1,
+                    label=flet.Text("1")
+                ),
+                flet.ChartAxisLabel(
+                    value=10,
+                    label=flet.Text("255")
+                ),
+            ],
+            labels_size=50,
+        ),
+        min_y=0,
+        max_y=10,
+        min_x=0,
+        max_x=10,
+        expand=True,        
+    )
+
+def make_linechart(chanel, color):
+    line_chart_data = flet.LineChartData(
+        stroke_width=2,
+        color=color,
+        curved=True,
+        stroke_cap_round=True,
+    )
+    histogram = cv2.calcHist([chanel], [0], None, [10], [0, 256])
+    max_ = max(histogram, key=lambda x: x[0])
+    histogram = histogram / max_
+    histogram = histogram * 10
+    for i, j in enumerate(histogram):
+        data_point = flet.LineChartDataPoint(i,j[0])
+        line_chart_data.data_points.append(data_point)
+    return line_chart_data
+    
 
 def main(page: flet.Page):
     page.title= "Light spectre controled with python"
     uploaded_files = os.listdir("./assets/uploads")
+    chartB = newchart()
+    chartG = newchart()
+    chartR = newchart()
+    
     images = flet.Row(
         expand= False,
         wrap= False,
@@ -21,9 +91,21 @@ def main(page: flet.Page):
     def set_current_file(name):
         current_file.value = name
         current_file.update()
-    def set_current_img(e):
+    def load_charts(e):
+        src = f"./assets/uploads/{current_file.value}"
+        data = cv2.imread(src)
+        B, G, R = cv2.split(data)
+        line_chart_b = make_linechart(B, flet.colors.BLUE)
+        line_chart_g = make_linechart(G, flet.colors.GREEN)
+        line_chart_r = make_linechart(R, flet.colors.RED)
+        chartB.data_series = [line_chart_b]
+        chartG.data_series = [line_chart_g]
+        chartR.data_series = [line_chart_r]
         current_img.src = f"/uploads/{current_file.value}"
         current_img.update()
+        chartB.update()
+        chartG.update()
+        chartR.update()
         page.update()
     def add_img_images(src, name=""):
         _col = flet.Column(
@@ -102,10 +184,12 @@ def main(page: flet.Page):
             notify("Please select an image!")
             
     col = flet.Column(
-        scroll= flet.ScrollMode.ALWAYS,
+        scroll= flet.ScrollMode.AUTO,
+        spacing= 20,
         expand= True,
         controls=[
             flet.Row(
+                scroll= flet.ScrollMode.AUTO,
                 controls=[
                     flet.Column(
                         controls=[
@@ -148,7 +232,7 @@ def main(page: flet.Page):
                                         flet.TextButton(
                                             text= "Load charts",
                                             icon= flet.icons.INSERT_CHART,
-                                            on_click= set_current_img
+                                            on_click= load_charts
                                         )
                                     ]
                                 ),
@@ -163,6 +247,26 @@ def main(page: flet.Page):
                 ],
             ),
             images,
+            flet.Row(
+                scroll= flet.ScrollMode.AUTO,
+                controls=[
+                    flet.Container(
+                        content= chartB,
+                        width= 400,
+                        height= 450,
+                    ),
+                    flet.Container(
+                        content= chartG,
+                        width= 400,
+                        height= 450,
+                    ),
+                    flet.Container(
+                        content= chartR,
+                        width= 400,
+                        height= 450,
+                    ),
+                ],
+            ),
             flet.Row(
                 alignment= flet.MainAxisAlignment.CENTER,
                 controls=[
