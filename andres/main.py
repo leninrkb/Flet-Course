@@ -3,7 +3,24 @@ import time
 import os 
 import cv2
 import matplotlib.pyplot as plt
+import copy
+import base64
+import numpy as np
 
+def tobase64(img):
+    encode = cv2.imencode('.jpg', img)[1].tobytes()
+    encode_base64 = base64.b64encode(encode)
+    imagen_base64_str = encode_base64.decode('utf-8')
+    return imagen_base64_str
+    
+def newslider(value_changed):
+    return flet.Slider(
+        min= -3,
+        max= 3,
+        divisions= 0.1,
+        on_change= value_changed,
+        value= 1
+    )
 
 def newchart():
     return flet.LineChart(
@@ -20,23 +37,25 @@ def newchart():
             width=1
         ),
         left_axis=flet.ChartAxis(
+            title= flet.Text("Count"),
             labels=[
                 flet.ChartAxisLabel(
-                    value=1,
-                    label=flet.Text("1"),
-                ),
-                flet.ChartAxisLabel(
                     value=10,
-                    label=flet.Text("255"),
+                    label=flet.Text("max")
                 ),
             ],
             labels_size=50,
         ),
         bottom_axis=flet.ChartAxis(
+            title= flet.Text("Brightness"),
             labels=[
                 flet.ChartAxisLabel(
                     value=1,
                     label=flet.Text("1")
+                ),
+                flet.ChartAxisLabel(
+                    value=5,
+                    label=flet.Text("150")
                 ),
                 flet.ChartAxisLabel(
                     value=10,
@@ -56,7 +75,7 @@ def make_linechart(chanel, color):
     line_chart_data = flet.LineChartData(
         stroke_width=2,
         color=color,
-        curved=True,
+        curved= True,
         stroke_cap_round=True,
     )
     histogram = cv2.calcHist([chanel], [0], None, [10], [0, 256])
@@ -68,45 +87,79 @@ def make_linechart(chanel, color):
         line_chart_data.data_points.append(data_point)
     return line_chart_data
     
-
+data = None
+sliderB_value = 1
+sliderG_value = 1
+sliderR_value = 1
 def main(page: flet.Page):
     page.title= "Light spectre controled with python"
     uploaded_files = os.listdir("./assets/uploads")
     chartB = newchart()
     chartG = newchart()
     chartR = newchart()
-    
+    def sliderB_changed(e):
+        global sliderB_value
+        sliderB_value = e.control.value
+    def sliderG_changed(e):
+        global sliderG_value
+        sliderG_value = e.control.value
+    def sliderR_changed(e):
+        global sliderR_value
+        sliderR_value = e.control.value
+    sliderB = newslider(sliderB_changed)
+    sliderG = newslider(sliderG_changed)
+    sliderR = newslider(sliderR_changed)
     images = flet.Row(
         expand= False,
         wrap= False,
-        scroll= "always",
+        scroll= flet.ScrollMode.AUTO,
     )
     current_img = flet.Image(
         src=f"/images/arabian_cat.png",
-        width=500,
+        width=600,
         height=500,
-        fit=flet.ImageFit.CONTAIN,
+        fit=flet.ImageFit.COVER,
         border_radius= flet.border_radius.all(10),
     )
     def set_current_file(name):
         current_file.value = name
         current_file.update()
     def load_charts(e):
-        src = f"./assets/uploads/{current_file.value}"
-        data = cv2.imread(src)
-        B, G, R = cv2.split(data)
-        line_chart_b = make_linechart(B, flet.colors.BLUE)
-        line_chart_g = make_linechart(G, flet.colors.GREEN)
-        line_chart_r = make_linechart(R, flet.colors.RED)
-        chartB.data_series = [line_chart_b]
-        chartG.data_series = [line_chart_g]
-        chartR.data_series = [line_chart_r]
-        current_img.src = f"/uploads/{current_file.value}"
-        current_img.update()
-        chartB.update()
-        chartG.update()
-        chartR.update()
-        page.update()
+        global data
+        if current_file.value != "":
+            src = f"./assets/uploads/{current_file.value}"
+            data = cv2.imread(src)
+            B, G, R = cv2.split(data)
+            line_chart_b = make_linechart(B, flet.colors.BLUE)
+            line_chart_g = make_linechart(G, flet.colors.GREEN)
+            line_chart_r = make_linechart(R, flet.colors.RED)
+            chartB.data_series = [line_chart_b]
+            chartG.data_series = [line_chart_g]
+            chartR.data_series = [line_chart_r]
+            current_img.src_base64 = ""
+            current_img.src = f"/uploads/{current_file.value}"
+            page.update()
+        else:
+            notify("Select an image!")
+    def recalc_hist(e):
+        try:
+            print(sliderB_value)
+            print(sliderG_value)
+            print(sliderR_value)
+            temp = copy.deepcopy(data)
+            temp[:, :, 0] = cv2.multiply(temp[:, :, 0], sliderB_value)
+            temp[:, :, 1] = cv2.multiply(temp[:, :, 1], sliderG_value)
+            temp[:, :, 2] = cv2.multiply(temp[:, :, 2], sliderR_value)
+            temp[:, :, 0] = np.clip(temp[:, :, 0], 0, 255)
+            temp[:, :, 1] = np.clip(temp[:, :, 1], 0, 255)
+            temp[:, :, 2] = np.clip(temp[:, :, 2], 0, 255)
+            encode_base64 = tobase64(temp)
+            current_img.src_base64 = encode_base64
+            current_img.src = ""
+            current_img.update()
+        except e:
+            print(e)
+            notify("Select an image!")
     def add_img_images(src, name=""):
         _col = flet.Column(
             controls= [
@@ -268,7 +321,7 @@ def main(page: flet.Page):
                 ],
             ),
             flet.Row(
-                alignment= flet.MainAxisAlignment.CENTER,
+                scroll= flet.ScrollMode.AUTO,
                 controls=[
                     flet.Container(
                         content= current_img,
@@ -277,13 +330,19 @@ def main(page: flet.Page):
                         border_radius= 10,
                         border= flet.border.all(1, flet.colors.DEEP_PURPLE_500),
                     ),
+                    flet.Column(
+                        controls=[
+                            flet.TextButton(
+                                text="Apply",
+                                on_click= recalc_hist
+                            ),
+                            sliderB,
+                            sliderG,
+                            sliderR,
+                        ]
+                    ),
                 ],
             ),
-            flet.Row(
-                controls=[
-                    flet.OutlinedButton(text="fit image")
-                ]
-            )
         ]
     )
     page.add(col)
